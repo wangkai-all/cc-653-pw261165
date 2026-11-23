@@ -1,0 +1,13 @@
+{
+  "name": "survey-crosstab-estimator",
+  "version": "1.0.0",
+  "description": "带结构零、上下界与可行性诊断的调查交叉表估计工具",
+  "private": true,
+  "scripts": {
+    "test": "node tests/run-tests.js && node tests/dom-smoke.js && node tests/contrast-check.js",
+    "test:core": "node tests/run-tests.js",
+    "test:dom": "node tests/dom-smoke.js",
+    "test:visual": "node tests/contrast-check.js",
+    "serve": "python3 -m http.server 8000"
+  }
+}

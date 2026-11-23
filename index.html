@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>调查交叉表估计器 · 结构零 / 上下界 / 可行性诊断</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="app-header">
+    <div>
+      <h1>调查交叉表估计器</h1>
+      <p class="subtitle">已知地区边际、出行方式边际与参考分布，在结构零与单元格上下界约束下估计完整交叉表</p>
+    </div>
+    <div class="header-badge" id="globalStatus" aria-live="polite"></div>
+  </header>
+
+  <!-- 示例选择与全局设置 -->
+  <section class="card" id="controlCard">
+    <div class="control-row">
+      <label class="control-block control-grow">
+        <span class="control-label">示例数据</span>
+        <select id="presetSelect"></select>
+      </label>
+      <label class="control-block">
+        <span class="control-label">参考权重为 0 的允许格</span>
+        <select id="zeroMode">
+          <option value="epsilon">ε 平滑（替换为小正数）</option>
+          <option value="hard">硬零（精确保持为 0）</option>
+        </select>
+      </label>
+      <label class="control-block">
+        <span class="control-label">ε 小正数</span>
+        <input type="number" id="epsilon" min="0" step="0.01" value="0.05">
+      </label>
+      <label class="control-block">
+        <span class="control-label">最大迭代</span>
+        <input type="number" id="maxIter" min="10" step="100" value="5000">
+      </label>
+      <div class="control-block control-buttons">
+        <button id="resetBtn" class="btn" type="button">恢复当前示例</button>
+      </div>
+    </div>
+    <p class="preset-desc" id="presetDesc"></p>
+  </section>
+
+  <!-- 可行性横幅 -->
+  <section id="feasibilityBanner" class="banner" aria-live="polite"></section>
+
+  <main class="main-grid">
+
+    <!-- 左：输入编辑 -->
+    <section class="card">
+      <h2>① 输入数据（可直接编辑）</h2>
+      <p class="hint">
+        编辑行/列边际总数与参考权重；点击任意单元格可切换<strong>业务禁用</strong>、设置<strong>上下限</strong>。
+        <span class="tag tag-forbidden">禁用</span> 表示该组合不存在，恒为 0 且绝不被平滑；
+        <span class="tag tag-refzero">参考0</span> 只是参考权重为 0，格子本身允许存在。
+      </p>
+
+      <h3 class="table-title">边际总数与参考权重</h3>
+      <div class="table-scroll">
+        <table class="grid" id="inputTable"></table>
+      </div>
+
+      <div id="cellEditor" class="cell-editor" hidden></div>
+
+      <div class="legend-row">
+        <span class="legend-item"><span class="swatch swatch-forbidden"></span> 业务禁用（结构零）</span>
+        <span class="legend-item"><span class="swatch swatch-refzero"></span> 参考权重为 0（允许格）</span>
+        <span class="legend-item"><span class="swatch swatch-bounded"></span> 已设上下限</span>
+      </div>
+    </section>
+
+    <!-- 右：求解结果 -->
+    <section class="card">
+      <h2>② 估计结果与诊断</h2>
+
+      <div id="solverMeta" class="solver-meta"></div>
+
+      <h3 class="table-title">分配结果（单元格热力 = 分配人数）</h3>
+      <div class="table-scroll">
+        <table class="grid result-grid" id="resultTable"></table>
+      </div>
+
+      <h3 class="table-title">逐行 / 逐列边际误差</h3>
+      <div class="table-scroll">
+        <table class="grid error-grid" id="errorTable"></table>
+      </div>
+
+      <h3 class="table-title">迭代误差曲线（对数刻度）</h3>
+      <div id="chartWrap"></div>
+
+      <div id="refZeroNotes" class="refzero-notes"></div>
+    </section>
+  </main>
+
+  <section class="card">
+    <h2>③ 调整记录（每次编辑怎样改变分配）</h2>
+    <div id="editLog" class="edit-log">
+      <p class="muted">尚无编辑记录。修改左侧任意输入后，这里会记录每次调整的时间、内容与受影响格子的增减。</p>
+    </div>
+  </section>
+
+  <footer class="app-footer">
+    <p>
+      方法：可行性 = 二分图容量流（Dinic 最大流 + 最小割 Hall 见证）；求解 = 带箱型约束的 KL 投影（有界 IPF，二分求缩放因子）。
+      业务禁用格不进入变量集合，任何平滑都不会向其填入数值。
+    </p>
+  </footer>
+</div>
+
+<script src="src/flow.js"></script>
+<script src="src/solver.js"></script>
+<script src="src/presets.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
